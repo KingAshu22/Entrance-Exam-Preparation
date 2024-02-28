@@ -2,213 +2,207 @@
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>
-        <%= exam %> Questions
-    </title>
-    <link rel="stylesheet" href="/styles.css">
-    <!-- MathJax Configuration -->
-    <script id="MathJax-script" async
-        src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.min.js"></script>
-    <style>
-        .navbar {
-            position: fixed;
-            top: 0;
-            width: 100%;
-            background-color: #333;
-            color: #fff;
-            padding: 10px 0;
-            text-align: center;
-            z-index: 1000;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>
+    <%= exam %> Questions
+  </title>
+  <link rel="stylesheet" href="/styles.css">
+
+  <!-- MathJax Configuration -->
+  <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.min.js" defer></script>
 </head>
 
 <body>
-    <!-- Navigation Bar -->
-    <div class="navbar">
-        <span>Attempted: <span id="attempted">0</span>/<%= questions.length %></span>
-        <span>Correct: <span id="correct">0</span></span>
-        <span>Incorrect: <span id="incorrect">0</span></span>
-        <span>Obtained Marks: <span id="obtainedMarks">0</span>/<%= questions.length * 4 %></span>
-    </div>
 
-    <!-- Loading screen overlay -->
-    <div id="loading-screen">
-        <div class="loading-animation"></div>
-    </div>
+  <% function formatQuestionContent(content) { %>
+  <% if (typeof content==="string" ) { %>
+  <% return content.replace(/\$\$(.*?)\$\$/g, "\\[$1\\]" ).replace(/\$(.*?)\$/g, "\\($1\\)"
+                ).replace(/\\n/g, "<br>" );%>
+  <% } %>
+  <% return "" ; %>
+  <% } %>
 
-    <% function formatQuestionContent(content) { const formattedContent=content.replace(/\$(.*?)\$/g, (_,
-        mathExpression)=>
-        {
-        return `\\(${mathExpression}\\)`;
+  <!-- Navigation Bar -->
+  <div class="navbar">
+    <span>Attempted: <span id="attempted">0</span>/<%= questions.length %>
+    </span>
+    <span>Correct: <span id="correct">0</span></span>
+    <span>Incorrect: <span id="incorrect">0</span></span>
+    <span>Obtained Marks: <span id="obtainedMarks">0</span>/<%= questions.length * 4 %>
+    </span>
+  </div>
+
+  <!-- Loading screen overlay -->
+  <div id="loading-screen">
+    <div class="loading-animation"></div>
+  </div>
+
+  <h1><span style="text-transform: uppercase;">
+      <%= exam %>
+    </span> Questions</h1>
+  <% var biology=0; var chemistry=0; var physics=0; var mathematics=0 %>
+  <% questions.forEach(question=> { %>
+  <% if (question.subject==="biology" ) { biology++; } %>
+  <% if (question.subject==="chemistry" ) { chemistry++; } %>
+  <% if (question.subject==="physics" ) { physics++; } %>
+  <% if (question.subject==="mathematics" ) { mathematics++; } %>
+  <% }); %>
+
+  <!-- Tab links -->
+  <div class="tab">
+    <% if (biology> 0) { %>
+    <button class="tablinks" onclick="filterQuestions(event, 'biology')">Biology
+      (<%= biology %>)</button>
+    <% } %>
+    <% if (chemistry> 0) { %>
+    <button class="tablinks" onclick="filterQuestions(event, 'chemistry')">Chemistry
+      (<%= chemistry %>)</button>
+    <% } %>
+    <% if (physics> 0) { %>
+    <button class="tablinks" onclick="filterQuestions(event, 'physics')">Physics
+      (<%= physics %>
+      )</button>
+    <% } %>
+    <% if (mathematics> 0) {
+                                                                                        %>
+    <button class="tablinks" onclick="filterQuestions(event, 'mathematics')">Mathematics
+      (<%= mathematics %>
+      )</button>
+    <% } %>
+  </div>
+
+  <!-- Question Container -->
+  <div id="questionsContainer">
+    <% questions.forEach((q, index)=> { %>
+    <div class="question" data-subject="<%= q.subject %>" data-correct="<%= q.question.en.correct_options[0] %>" data-marks="<%= q.marks %>" data-neg-marks="<%= q.negMarks %>">
+      <div class="question-details">
+        <span class="question-paper">Paper:
+          <%= q.paperTitle.replace(/-/g, ' ' ) %>
+        </span>
+        <span class="question-subject">Sub:
+          <%= q.subject.replace(/-/g, ' ' ) %>
+        </span>
+        <span class="question-group">Group:
+          <%= q.chapterGroup.replace(/-/g, ' ' ) %>
+        </span>
+        <span class="question-chapter">Chapter:
+          <%= q.chapter.replace(/-/g, ' ' ) %>
+        </span>
+        <span class="question-topic">Topic:
+          <%= q.topic?.replace(/-/g, ' ' ) %>
+        </span>
+        <span class="question-type">Type:
+          <%= q.type.replace(/-/g, ' ' ) %>
+        </span>
+        <span class="question-id">ID: <%= q.question_id
+                                                                                %>
+        </span>
+        <% if (q.isOutOfSyllabus) { %>
+        <span class="question-syllabus" style="background-color: rgba(255, 0, 0, 0.2); color: red;">Out
+          of Syllabus</span>
+        <% } %>
+      </div>
+      <div class="question-header">
+        <span class="question-number">
+          <%= index + 1 %>.
+        </span>
+        <span class="question-content"><%-
+                                                                                q.question.en.content %></span>
+      </div>
+      <% q.question.en.options.forEach(option=>
+                                                                        { %>
+      <p class="option" data-option="<%= option.identifier %>">
+        <span class="option-num">
+          <%= option.identifier %>
+        </span>
+        <span>
+          <%- formatQuestionContent(option.content)
+                                                                                    %>
+        </span>
+      </p>
+      <% }); %>
+      <div class="explanation" style="display: none;">
+        Explanation: <%-
+                                                                                    q.question.en.explanation %>
+      </div>
+    </div>
+    <% }); %>
+  </div>
+
+  <script src="/js/script.js"></script>
+  <script>
+    // Hide the loading screen when the page is fully loaded
+    window.onload = function() {
+      var loadingScreen = document.getElementById('loading-screen');
+      loadingScreen.style.display = 'none';
+    };
+  </script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const questions = document.querySelectorAll('.question');
+      const attemptedCount = document.getElementById('attempted');
+      const correctCount = document.getElementById('correct');
+      const incorrectCount = document.getElementById('incorrect');
+      const totalMarks = document.getElementById('totalMarks');
+      const obtainedMarks = document.getElementById('obtainedMarks');
+
+      let attempted = 0;
+      let correct = 0;
+      let incorrect = 0;
+      let total = 0;
+      let obtained = 0;
+
+      questions.forEach(question => {
+        const options = question.querySelectorAll('.option');
+        const correctOption = question.getAttribute('data-correct');
+        const marks = parseInt(question.getAttribute('data-marks'));
+        const negMarks = parseInt(question.getAttribute('data-neg-marks'));
+        const explanation = question.querySelector('.explanation');
+
+        total += marks;
+
+        options.forEach(option => {
+          option.addEventListener('click', function() {
+            const selectedOption = this.getAttribute('data-option');
+            options.forEach(opt => {
+              opt.classList.remove('correct', 'wrong');
+            }); // Reset classes
+
+            if (!question.classList.contains('attempted')) {
+              attempted++;
+              question.classList.add('attempted');
+              attemptedCount.textContent = attempted;
+            }
+
+            if (selectedOption === correctOption) {
+              this.classList.add('correct');
+              correct++;
+              correctCount.textContent = correct;
+              obtained += marks;
+            } else {
+              this.classList.add('wrong');
+              const correctOne = question.querySelector(`.option[data-option="${correctOption}"]`);
+              correctOne.classList.add('correct');
+              incorrect++;
+              incorrectCount.textContent = incorrect;
+              obtained -= negMarks;
+            }
+
+            obtainedMarks.textContent = obtained;
+            explanation.style.display = 'block'; // Show explanation
+          });
         });
-        return formattedContent;
-        } %>
-        <h1><span style="text-transform: uppercase;">
-                <%= exam %>
-            </span> Questions</h1>
-        <% var biology=0; var chemistry=0; var physics=0; var mathematics=0 %>
-            <% questions.forEach(question=> { %>
-                <% if (question.subject==="biology" ) { biology++; } %>
-                    <% if (question.subject==="chemistry" ) { chemistry++; } %>
-                        <% if (question.subject==="physics" ) { physics++; } %>
-                            <% if (question.subject==="mathematics" ) { mathematics++; } %>
-                                <% }); %>
+      });
 
-                                    <!-- Tab links -->
-                                    <div class="tab">
-                                        <% if (biology> 0) { %>
-                                            <button class="tablinks" onclick="filterQuestions(event, 'biology')">Biology
-                                                (<%= biology %>)</button>
-                                            <% } %>
-                                                <% if (chemistry> 0) { %>
-                                                    <button class="tablinks"
-                                                        onclick="filterQuestions(event, 'chemistry')">Chemistry (<%=
-                                                            chemistry %>)</button>
-                                                    <% } %>
-                                                        <% if (physics> 0) { %>
-                                                            <button class="tablinks"
-                                                                onclick="filterQuestions(event, 'physics')">Physics (<%=
-                                                                    physics %>)</button>
-                                                            <% } %>
-                                                                <% if (mathematics> 0) { %>
-                                                                    <button class="tablinks"
-                                                                        onclick="filterQuestions(event, 'mathematics')">Mathematics
-                                                                        (<%= mathematics %>)</button>
-                                                                    <% } %>
-                                    </div>
+      const questionDetails = document.querySelectorAll('.question-details span');
 
-                                    <!-- Question Container -->
-                                    <div id="questionsContainer">
-                                        <% questions.forEach((q, index)=> { %>
-                                            <div class="question" data-subject="<%= q.subject %>"
-                                                data-correct="<%= q.question.en.correct_options[0] %>"
-                                                data-marks="<%= q.marks %>" data-neg-marks="<%= q.negMarks %>">
-                                                <div class="question-details">
-                                                    <span class="question-paper">Paper: <%=
-                                                            q.paperTitle.replace(/-/g, ' ' ) %></span>
-                                                    <span class="question-subject">Sub: <%= q.subject.replace(/-/g, ' '
-                                                            ) %></span>
-                                                    <span class="question-group">Group: <%=
-                                                            q.chapterGroup.replace(/-/g, ' ' ) %></span>
-                                                    <span class="question-chapter">Chapter: <%=
-                                                            q.chapter.replace(/-/g, ' ' ) %></span>
-                                                    <span class="question-topic">Topic: <%= q.topic?.replace(/-/g, ' ' )
-                                                            %></span>
-                                                    <span class="question-type">Type: <%= q.type.replace(/-/g, ' ' ) %>
-                                                    </span>
-                                                    <span class="question-id">ID: <%= q.question_id %></span>
-                                                    <% if (q.isOutOfSyllabus) { %>
-                                                        <span class="question-syllabus"
-                                                            style="background-color: rgba(255, 0, 0, 0.2); color: red;">Out
-                                                            of Syllabus</span>
-                                                        <% } %>
-                                                </div>
-                                                <div class="question-header">
-                                                    <span class="question-number">
-                                                        <%= index + 1 %>.
-                                                    </span>
-                                                    <span class="question-content"><%-
-                                                            formatQuestionContent(q.question.en.content) %></span>
-                                                </div>
-                                                <% q.question.en.options.forEach(option=> { %>
-                                                    <p class="option" data-option="<%= option.identifier %>">
-                                                        <span class="option-num">
-                                                            <%= option.identifier %>
-                                                        </span>
-                                                        <span><%- formatQuestionContent(option.content) %></span>
-                                                    </p>
-                                                    <% }); %>
-                                                        <div class="explanation" style="display: none;">Explanation: <%-
-                                                                formatQuestionContent(q.question.en.explanation) %>
-                                                        </div>
-                                            </div>
-                                            <% }); %>
-                                    </div>
-
-                                    <script src="/js/script.js"></script>
-                                    <script>
-                                        // Hide the loading screen when the page is fully loaded
-                                        window.onload = function () {
-                                            var loadingScreen = document.getElementById('loading-screen');
-                                            loadingScreen.style.display = 'none';
-                                        };
-                                    </script>
-                                    <script>
-                                        // Assuming MathJax is already loaded and configured
-                                        MathJax.typesetPromise()
-                                            .then(() => {
-                                                console.log('MathJax is ready');
-                                            })
-                                            .catch((err) => {
-                                                console.error('MathJax typesetting failed: ', err);
-                                            });
-                                    </script>
-                                    <script>
-                                        document.addEventListener('DOMContentLoaded', function () {
-                                            const questions = document.querySelectorAll('.question');
-                                            const attemptedCount = document.getElementById('attempted');
-                                            const correctCount = document.getElementById('correct');
-                                            const incorrectCount = document.getElementById('incorrect');
-                                            const totalMarks = document.getElementById('totalMarks');
-                                            const obtainedMarks = document.getElementById('obtainedMarks');
-
-                                            let attempted = 0;
-                                            let correct = 0;
-                                            let incorrect = 0;
-                                            let total = 0;
-                                            let obtained = 0;
-
-                                            questions.forEach(question => {
-                                                const options = question.querySelectorAll('.option');
-                                                const correctOption = question.getAttribute('data-correct');
-                                                const marks = parseInt(question.getAttribute('data-marks'));
-                                                const negMarks = parseInt(question.getAttribute('data-neg-marks'));
-                                                const explanation = question.querySelector('.explanation');
-
-                                                total += marks;
-
-                                                options.forEach(option => {
-                                                    option.addEventListener('click', function () {
-                                                        const selectedOption = this.getAttribute('data-option');
-                                                        options.forEach(opt => { opt.classList.remove('correct', 'wrong'); }); // Reset classes
-
-                                                        if (!question.classList.contains('attempted')) {
-                                                            attempted++;
-                                                            question.classList.add('attempted');
-                                                            attemptedCount.textContent = attempted;
-                                                        }
-
-                                                        if (selectedOption === correctOption) {
-                                                            this.classList.add('correct');
-                                                            correct++;
-                                                            correctCount.textContent = correct;
-                                                            obtained += marks;
-                                                        } else {
-                                                            this.classList.add('wrong');
-                                                            const correctOne = question.querySelector(`.option[data-option="${correctOption}"]`);
-                                                            correctOne.classList.add('correct');
-                                                            incorrect++;
-                                                            incorrectCount.textContent = incorrect;
-                                                            obtained -= negMarks;
-                                                        }
-
-                                                        obtainedMarks.textContent = obtained;
-                                                        explanation.style.display = 'block'; // Show explanation
-                                                    });
-                                                });
-                                            });
-
-                                            const questionDetails = document.querySelectorAll('.question-details span');
-
-                                            questionDetails.forEach(span => {
-                                                // Replace hyphens with spaces and capitalize the first letter of each word
-                                                span.textContent = span.textContent.replace(/-/g, ' ').trim().replace(/\b\w/g, c => c.toUpperCase());
-                                            });
-                                        });
-                                    </script>
+      questionDetails.forEach(span => {
+        // Replace hyphens with spaces and capitalize the first letter of each word
+        span.textContent = span.textContent.replace(/-/g, ' ').trim().replace(/\b\w/g, c => c.toUpperCase());
+      });
+    });
+  </script>
 </body>
 
 </html>
