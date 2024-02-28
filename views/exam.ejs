@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>
+        <%= exam %> Options
+    </title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f8f8f8;
+            margin: 0;
+            padding: 20px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        .tab {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 20px;
+        }
+
+        .tab button {
+            padding: 10px 20px;
+            cursor: pointer;
+            background-color: #fff;
+            color: #000;
+            border: none;
+            border-radius: 5px 5px 0 0;
+            /* Add border radius */
+            margin: 0 5px;
+            transition: background-color 0.3s;
+        }
+
+        .tab .active {
+            background-color: #f44336;
+            color: #fff;
+        }
+
+        .tab button:hover {
+            background-color: #000;
+            color: #fff;
+        }
+
+        .tab-content {
+            display: none;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-top: none;
+            border-radius: 0 0 5px 5px;
+            background-color: #fff;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .tab-content {
+            display: none;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-top: none;
+            border-radius: 0 0 5px 5px;
+            background-color: #fff;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .tab-content a,
+        .tab-content .chapter-container,
+        .tab-content .topics-container .topic {
+            display: inline-block;
+            /* Display as inline-block to enable wrapping */
+            margin-right: 10px;
+            /* Add spacing between anchor tags */
+            margin-bottom: 10px;
+            /* Add spacing between lines */
+            padding: 10px;
+            text-decoration: none;
+            color: #333;
+            border: 1px solid #ccc;
+            border-radius: 20px;
+            /* Adjust border radius for smooth curve */
+            transition: background-color 0.3s;
+            text-transform: capitalize;
+        }
+
+        .tab-content a:hover {
+            background-color: #f0f0f0;
+        }
+    </style>
+</head>
+
+<body>
+    <h1><span style="text-transform: uppercase;">
+            <%= exam %>
+        </span> Options</h1>
+
+    <div class="tab">
+        <button class="tablinks active" onclick="showTab('paper')">Paper Wise</button>
+        <button class="tablinks" onclick="showTab('subject')">Subject Wise</button>
+        <button class="tablinks" onclick="showTab('chapter')">Chapter Wise</button>
+        <button class="tablinks" onclick="showTab('topic')">Topic Wise</button>
+    </div>
+
+    <div id="paperOptions" class="tab-content active">
+        <% yearKeys.forEach((year, index)=> { %>
+            <a href="/test/<%= exam %>/yearKey=<%= year %>">
+                <%= year.replace(/-/g, ' ' ) %>
+            </a>
+            <% }) %>
+    </div>
+    <div id="subjectOptions" class="tab-content">
+        <% subjects.forEach((sub, index)=> { %>
+            <a href="/test/<%= exam %>/subject=<%= sub %>">
+                <%= sub.replace(/-/g, ' ' ) %>
+            </a>
+            <% }) %>
+    </div>
+    <div id="chapterOptions" class="tab-content">
+        <% structuredChapters.forEach((subject, index)=> { %>
+            <h2 style="text-transform: capitalize;">
+                <%= subject.subject.replace(/-/g, ' ' ) %>
+            </h2>
+            <% subject.chapters.forEach((chapter, index)=> { %>
+                <a href="/test/<%= exam %>/chapter=<%= chapter.chapter %>">
+                    <%= chapter.chapter.replace(/-/g, ' ' ) %>
+                </a>
+                <% }) %>
+                    <% }) %>
+    </div>
+    <div id="topicOptions" class="tab-content">
+        <% structuredChapters.forEach((subject, index)=> { %>
+            <h2 style="text-transform: capitalize;">
+                <%= subject.subject.replace(/-/g, ' ' ) %>
+            </h2>
+            <% subject.chapters.forEach((chapter, index)=> { %>
+                <div class="chapter-container">
+                    <div class="chapter-name" onclick="toggleTopics(this)">
+                        <%= chapter.chapter.replace(/-/g, ' ' ) %>
+                    </div>
+                    <div class="topics-container" style="display: none;">
+                        <% chapter.topics.forEach((topic, index)=> { %>
+                            <% if (topic) { %>
+                                <a href="/test/<%= exam %>/topic=<%= topic %>">
+                                    <%= topic.replace(/-/g, ' ' ) %>
+                                </a>
+                                <% } else { %>
+                                    <a href="/test/<%= exam %>/chapter=<%= chapter.chapter %>">
+                                        <%= chapter.chapter.replace(/-/g, ' ' ) %>
+                                    </a>
+                                    <% } %>
+                                        <% }) %>
+                    </div>
+                </div>
+                <% }) %>
+                    <% }) %>
+    </div>
+
+    <script>
+        function toggleTopics(chapterDiv) {
+            var topicsContainer = chapterDiv.nextElementSibling;
+            topicsContainer.style.display = topicsContainer.style.display === 'none' ? 'block' : 'none';
+        }
+    </script>
+
+    <script>
+        function showTab(tabName) {
+            var i;
+            var tabContents = document.getElementsByClassName('tab-content');
+            var tabLinks = document.getElementsByClassName('tablinks');
+
+            // Hide all tab content and remove active class from tab links
+            for (i = 0; i < tabContents.length; i++) {
+                tabContents[i].style.display = 'none';
+                tabLinks[i].classList.remove('active');
+            }
+
+            // Show the selected tab content and add active class to tab link
+            document.getElementById(tabName + 'Options').style.display = 'block';
+            event.currentTarget.classList.add('active');
+        }
+
+        // Show paper tab content by default
+        document.getElementById('paperOptions').style.display = 'block';
+    </script>
+</body>
+
+</html>
